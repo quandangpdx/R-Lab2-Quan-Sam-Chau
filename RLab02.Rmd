@@ -22,6 +22,8 @@ library(dplyr)
 load("CBdata.1_10.RData") #Loading the cherry blossom data. (this is an example of a properly commented line of code)
 
 #Now write code to remove the specified column
+dat.76 <- data.frame(CBdata.1_10[4])
+dat.76 <- dat.76 %>% select(-PiS.TiS)
 
 ```
 
@@ -29,6 +31,8 @@ load("CBdata.1_10.RData") #Loading the cherry blossom data. (this is an example 
 2) Use the `summarise()` function to find the mean and median recorded ages in 1976. 
 
 ```{r summary}
+dat.76 %>% summarise(mean_age=mean(Age, na.rm=T),
+                     median_age=median(Age, na.rm = T))
 
 ```
 
@@ -37,7 +41,7 @@ load("CBdata.1_10.RData") #Loading the cherry blossom data. (this is an example 
 
 
 ```{r remove_missing_age}
-
+dat.76.clean <- dat.76 %>% filter(!is.na(Age))
 
 ```
 
@@ -46,19 +50,71 @@ load("CBdata.1_10.RData") #Loading the cherry blossom data. (this is an example 
 Use the `identical()` function to verify that the 1976 data in this larger cleaned data set is the same as the cleaned version of `dat.76`. 
 
 ```{r combine_dat}
+allData <- bind_rows(CBdata.1_10)
+allData <- allData %>% filter(!is.na(Age)) %>% select(-`PiS/TiS`)
+
+identical(dat.76.clean, allData %>% filter(Year==1976)) # supposed to be identical - 481 observations of 9 variables?
 
 ```
 
 5) Now that you have the combined data set for these 10 years, let's compare some basic results to what you found last week. Use piping and `dplyr` functions in your computations.  
-a) Calculate the average of the recorded ages in 1976 and that same average over the entire `CBdata.1_10` data set, and make sure these numbers match the ones you found in Lab 1.  
-b) Recall that the `CBdata.1_10` contains the first ten year's worth of cherry blossom race data. Compute the average participant age over the first five years and the average age over years 6-10, and make sure these numbers match the ones you found in Lab 1.  
+a) Calculate the average of the recorded ages in 1976 and that same average over the entire `CBdata.1_10` data set, and make sure these numbers match the ones you found in Lab 1.
+```{r}
+dat.76.clean %>% summarise(mean_76=mean(Age))
+allData %>% summarise(mean_all=mean(Age))
+```
+
+b) Recall that the `CBdata.1_10` contains the first ten year's worth of cherry blossom race data. Compute the average participant age over the first five years and the average age over years 6-10, and make sure these numbers match the ones you found in Lab 1.
+```{r}
+allData %>% filter(Year<1978) %>% summarise(mean_all=mean(Age))
+allData %>% filter(Year>=1978) %>% summarise(mean_all=mean(Age))
+
+```
+
 
 
 6) Let's now incorporate weather data into our cherry blossom data set. We will be dealing with multiple data sources, so this is a perfect oppritunity to practice `join` skills...
 a) use `readr()` to import the `weatherdat.csv` data. This is raw data recorded by a weather station in the Washington DC area. This particular data set contains daily summaries of various weather measurements. 
+```{r}
+library(readr)
+weather <- read.csv("weatherdat.csv")
+```
+
 b) Open the `Rite_of_Spring_1973_2020-1.pdf` document, and record the dates of the first 10 races. Store this information in a vector or data frame.
+```{r}
+#install.packages("pdftools")
+library(pdftools)
+library(stringr)
+pdf <- pdf_text("Rite_of_Spring_1973_2020-1.pdf")
+regex_pattern <- "\\d{4}\\s\\((April|March)\\s\\d{1,2}\\)" # eg: 2020 (April 5)
+
+raw_date <- unlist(str_match_all(pdf, regex_pattern))
+raw_date <- as.data.frame.AsIs(raw_date)
+View(raw_date)
+
+library(tidyr)
+raw_date <- raw_date %>% filter(raw_date!="April",raw_date!="March") %>% distinct() %>% separate(col=raw_date, into= c("year","month","day"),sep=c(" ")) 
+raw_date$day <- str_sub(raw_date$day, 1, nchar(raw_date$day)-1) 
+date <-  raw_date %>% mutate(
+  m=case_when(month=="(April"~"04",
+              month=="(March"~"03"))
+date$day <- str_replace(date$day,nchar(date$day)==1,paste0("0",date$day[nchar(date$day)==1]))
+date$day[nchar(date$day)==1] <- paste0("0",date$day[nchar(date$day)==1])
+date$DATE <- paste(date$year,date$m,date$day, sep = "-")
+date$year <- as.numeric(date$year)
+```
+
 c) Use a `join` function to add a date column to your cherry blossom data frame. Hints: (i) the `paste()` and `paste0` functions are useful for creating charecter vectors (ii) it would be useful for these dates to have the same format as those found in the weather data set...
+```{r}
+
+allData <- allData %>% left_join(date %>% select(year,DATE), by = c("Year"="year"))
+```
+
 d) Use a `join` function to add precipitation `PRCP`  and minimum daily temperature `TMIN` columns to your cherry blossom data set.
+```{r}
+allData <- allData %>% left_join(weather %>% select(PRCP,TMIN,DATE), by = "DATE")
+```
+
 
 # Playing with the indoor positioning system data
 
