@@ -31,6 +31,7 @@ dat.76 <- dat.76 %>% select(-PiS.TiS)
 2) Use the `summarise()` function to find the mean and median recorded ages in 1976.
 
 ```{r summary}
+# find and display the mean and median ages from 1976
 dat.76 %>% summarise(mean_age=mean(Age, na.rm=T),
                      median_age=median(Age, na.rm = T))
 
@@ -41,6 +42,7 @@ dat.76 %>% summarise(mean_age=mean(Age, na.rm=T),
 
 
 ```{r remove_missing_age}
+# remove participants with unrecorded age
 dat.76.clean <- dat.76 %>% filter(!is.na(Age))
 
 ```
@@ -50,10 +52,15 @@ dat.76.clean <- dat.76 %>% filter(!is.na(Age))
 Use the `identical()` function to verify that the 1976 data in this larger cleaned data set is the same as the cleaned version of `dat.76`.
 
 ```{r combine_dat}
+# comnine all data into a single data frame
 allData <- bind_rows(CBdata.1_10)
+
+# remove Pis/Tis column and observations with unrecorded age
 allData <- allData %>% filter(!is.na(Age)) %>% select(-`PiS/TiS`)
 
-identical(dat.76.clean, allData %>% filter(Year==1976)) # supposed to be identical - 481 observations of 9 variables?
+# compare results to cleaned data from last week's lab
+# supposed to be identical - 481 observations of 9 variables?
+identical(dat.76.clean, allData %>% filter(Year==1976))
 
 ```
 
@@ -62,13 +69,18 @@ identical(dat.76.clean, allData %>% filter(Year==1976)) # supposed to be identic
 a) Calculate the average of the recorded ages in 1976 and that same average over the entire `CBdata.1_10` data set, and make sure these numbers match the ones you found in Lab 1.
 
 ```{r}
+# compute and display average age of participants in 1976
 dat.76.clean %>% summarise(mean_76=mean(Age))
+
+# compare with results from last week's lab
 allData %>% summarise(mean_all=mean(Age))
 ```
 
 b) Recall that the `CBdata.1_10` contains the first ten year's worth of cherry blossom race data. Compute the average participant age over the first five years and the average age over years 6-10, and make sure these numbers match the ones you found in Lab 1.
 
 ```{r}
+# compare average age of participants in years before 1978 to
+# that in years in 1978 and after
 allData %>% filter(Year<1978) %>% summarise(mean_all=mean(Age))
 allData %>% filter(Year>=1978) %>% summarise(mean_all=mean(Age))
 
@@ -79,28 +91,41 @@ a) use `readr()` to import the `weatherdat.csv` data. This is raw data recorded 
 
 ```{r}
 library(readr)
+
+# import weather data
 weather <- read.csv("weatherdat.csv")
 ```
 
 b) Open the `Rite_of_Spring_1973_2020-1.pdf` document, and record the dates of the first 10 races. Store this information in a vector or data frame.
 
 ```{r}
-#install.packages("pdftools")
 library(pdftools)
 library(stringr)
+library(tidyr)
+
+# import document with data on races
 pdf <- pdf_text("Rite_of_Spring_1973_2020-1.pdf")
+
+# define date pattern
 regex_pattern <- "\\d{4}\\s\\((April|March)\\s\\d{1,2}\\)" # eg: 2020 (April 5)
 
+# search for dates of races and save to a dataframe
 raw_date <- unlist(str_match_all(pdf, regex_pattern))
 raw_date <- as.data.frame.AsIs(raw_date)
 View(raw_date)
 
-library(tidyr)
-raw_date <- raw_date %>% filter(raw_date!="April",raw_date!="March") %>% distinct() %>% separate(col=raw_date, into= c("year","month","day"),sep=c(" ")) 
-raw_date$day <- str_sub(raw_date$day, 1, nchar(raw_date$day)-1) 
+# look for dates in April and March
+raw_date <- raw_date %>% filter(raw_date!="April",raw_date!="March") %>% distinct() %>% separate(col=raw_date, into= c("year","month","day"),sep=c(" "))
+
+# remove excess character from day string
+raw_date$day <- str_sub(raw_date$day, 1, nchar(raw_date$day)-1)
+
+# convert month name to number string
 date <-  raw_date %>% mutate(
   m=case_when(month=="(April"~"04",
               month=="(March"~"03"))
+
+# magic to convert dates to numeric values
 date$day <- str_replace(date$day,nchar(date$day)==1,paste0("0",date$day[nchar(date$day)==1]))
 date$day[nchar(date$day)==1] <- paste0("0",date$day[nchar(date$day)==1])
 date$DATE <- paste(date$year,date$m,date$day, sep = "-")
@@ -109,12 +134,13 @@ date$year <- as.numeric(date$year)
 
 c) Use a `join` function to add a date column to your cherry blossom data frame. Hints: (i) the `paste()` and `paste0` functions are useful for creating charecter vectors (ii) it would be useful for these dates to have the same format as those found in the weather data set...
 ```{r}
-
+# add date column to cherry blossom data
 allData <- allData %>% left_join(date %>% select(year,DATE), by = c("Year"="year"))
 ```
 
 d) Use a `join` function to add precipitation `PRCP`  and minimum daily temperature `TMIN` columns to your cherry blossom data set.
 ```{r}
+# add precipitation and temperature data to cherry blossom data
 allData <- allData %>% left_join(weather %>% select(PRCP,TMIN,DATE), by = "DATE")
 ```
 
@@ -160,7 +186,7 @@ IPS_sampledata <- IPS_sampledata %>%
         posY = as.numeric(posY),
         posZ = as.numeric(posZ),
         orientation = as.numeric(orientation),
-        signal = as.numeric(signal), 
+        signal = as.numeric(signal),
         channel = as.numeric(channel),
         type = as.numeric(type)
     );
@@ -206,6 +232,8 @@ Set this data set aside and use the long format data for the rest of the assignm
 library(tidyr);
 
 # using pivot_wider to generate a wide format data frame
+#   (!) this doesn't quite work, and generates a lot of NA's
+#   (!) not sure how to fix it or why it happens :(
 wide_IPS_sampledata <- IPS_sampledata %>%
     mutate(row = row_number()) %>%
     group_by(time, posX, posY, orientation, mac) %>%
@@ -213,6 +241,7 @@ wide_IPS_sampledata <- IPS_sampledata %>%
     select(-row);
 
 summary(wide_IPS_sampledata);
+
 ```
 
 
@@ -220,8 +249,9 @@ summary(wide_IPS_sampledata);
 
 1. Using grouping and `dplyr` functions, tally the  number of observations for all access points in the data.
 ```{r tally}
-tally = IPS_sampledata %>% 
-  group_by(mac) %>% 
+# count number of observations from each access point
+tally = IPS_sampledata %>%
+  group_by(mac) %>%
   count()
 
 tally
@@ -229,7 +259,8 @@ tally
 
 2. While the researchers did their best to clean their data, some noise was introduced by access points on other floors.  Based on the number of counts, identify and remove likely suspects for access points read by mistake, again using `dplyr` functions.
 ```{r remove_dupes}
-cleaned = IPS_sampledata %>% 
+# look for distinct entries
+cleaned = IPS_sampledata %>%
   distinct(time, posX, posY, orientation, mac, signal)
 
 # note the difference in number of rows between the cleaned data and the original data
@@ -239,8 +270,9 @@ IPS_sampledata
 
 3.  The orientation of the hand-held device considered was supposed to be exactly set to the 8 angles from 0-315 in increments of 45 degrees (360 is equivalent to 0). However, in practice the measured orientations were close to the 8 expected but had some error.  Use the `case_when` function to recode the orientation values as one of 0, 45, 90, 135, 180, 225, 270, 315. Call the recoded orientation variable `rec_orient`.
 ```{r orient}
-rec_orient = cleaned %>% 
-  select(orientation) %>% 
+# round each orientation to the nearest multiple of 45 degrees (modulo 360)
+rec_orient = cleaned %>%
+  select(orientation) %>%
   mutate(orientation =
     case_when(
       orientation %% 360 < 9 ~ 0,
@@ -263,17 +295,20 @@ rec_orient = cleaned %>%
     )
   )
 
-rec_orient %>% 
-  group_by(orientation) %>% 
+# count number of observations
+rec_orient %>%
+  group_by(orientation) %>%
   count()
 ```
 
 4. Last week you created the function `signal_summary` that takes as inputs a location (`posX`, `posY`, `posZ`), an orientation (`rec_orient`) and an access point id (`mac`).  The function identified and subset the rows in `IPS_sampledata` corresponding to this unique combination, then calculated and returned the mean and standard deviation for the corresponding signal strengths. You then used `lapply` to compute mean and standard deviation values for all combinations of location, orientation, and access point ID.
 Use piping,`summarise()`, and other `dplyr` functions to run this same computation without the use of loops or `lapply`. Compare your results with those from last week to confirm you're doing the right thing!
 ```{r summary}
-cleaned %>% 
+# compute average signal strength
+cleaned %>%
   summarise(sigal_mean = mean(signal))
 
-cleaned %>% 
+# compute standard deviation of signal strength
+cleaned %>%
   summarise(signal_sd = sd(signal))
 ```
