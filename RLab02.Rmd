@@ -133,6 +133,9 @@ date$day[nchar(date$day)==1] <- paste0("0",date$day[nchar(date$day)==1])
 date$DATE <- paste(date$year,date$m,date$day, sep = "-")
 date$year <- as.numeric(date$year)
 
+# first 10 years
+date <- date[order(date$year),]
+date <- date[1:10,]
 
 ```
 
