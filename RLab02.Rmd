@@ -18,10 +18,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r import_data}
+# Loading the cherry blossom data
 library(dplyr)
-load("CBdata.1_10.RData") #Loading the cherry blossom data. (this is an example of a properly commented line of code)
+load("CBdata.1_10.RData")
 
-#Now write code to remove the specified column
+# Now write code to remove the specified column
 dat.76 <- data.frame(CBdata.1_10[4])
 dat.76 <- dat.76 %>% select(-PiS.TiS)
 
@@ -59,7 +60,7 @@ allData <- bind_rows(CBdata.1_10)
 allData <- allData %>% filter(!is.na(Age)) %>% select(-`PiS/TiS`)
 
 # compare results to cleaned data from last week's lab
-# supposed to be identical - 481 observations of 9 variables?
+# (supposed to be identical - 481 observations of 9 variables?)
 identical(dat.76.clean, allData %>% filter(Year==1976))
 
 ```
@@ -234,17 +235,13 @@ head(IPS_sampledata);
 Set this data set aside and use the long format data for the rest of the assignment
 
 ```{r}
-library(tidyr);
-
 # using pivot_wider to generate a wide format data frame
-#   (!) this doesn't quite work, and generates a lot of NA's
-#   (!) not sure how to fix it or why it happens :(
+
 wide_IPS_sampledata <- IPS_sampledata %>%
     pivot_wider(names_from = mac, values_from = signal)
 
 head(wide_IPS_sampledata)
 nrow(wide_IPS_sampledata);
-
 ```
 
 
@@ -257,7 +254,7 @@ tally = IPS_sampledata %>%
   group_by(mac) %>%
   count()
 
-tally
+summary(tally)
 ```
 
 2. While the researchers did their best to clean their data, some noise was introduced by access points on other floors.  Based on the number of counts, identify and remove likely suspects for access points read by mistake, again using `dplyr` functions.

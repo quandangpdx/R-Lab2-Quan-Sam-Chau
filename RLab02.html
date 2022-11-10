@@ -933,7 +933,8 @@ Cherry Blossom Race data. Pull out the data associated with 1976 and
 store it as a data frame called <code>dat.76</code>. Remove the column
 <code>Pis/Tis</code> using a <code>dplyr</code> function.</li>
 </ol>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Loading the cherry blossom data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
 <pre><code>## 
 ## Attaching package: &#39;dplyr&#39;</code></pre>
 <pre><code>## The following objects are masked from &#39;package:stats&#39;:
@@ -942,9 +943,9 @@ store it as a data frame called <code>dat.76</code>. Remove the column
 <pre><code>## The following objects are masked from &#39;package:base&#39;:
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&quot;CBdata.1_10.RData&quot;</span>) <span class="co">#Loading the cherry blossom data. (this is an example of a properly commented line of code)</span></span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&quot;CBdata.1_10.RData&quot;</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Now write code to remove the specified column</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Now write code to remove the specified column</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>dat<span class="fl">.76</span> <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(CBdata<span class="fl">.1</span>_10[<span class="dv">4</span>])</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>dat<span class="fl">.76</span> <span class="ot">&lt;-</span> dat<span class="fl">.76</span> <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>PiS.TiS)</span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
@@ -981,7 +982,7 @@ the same as the cleaned version of <code>dat.76</code>.</li>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>allData <span class="ot">&lt;-</span> allData <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Age)) <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="st">`</span><span class="at">PiS/TiS</span><span class="st">`</span>)</span>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># compare results to cleaned data from last week&#39;s lab</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># supposed to be identical - 481 observations of 9 variables?</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># (supposed to be identical - 481 observations of 9 variables?)</span></span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(dat.<span class="fl">76.</span>clean, allData <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Year<span class="sc">==</span><span class="dv">1976</span>))</span></code></pre></div>
 <pre><code>## [1] FALSE</code></pre>
 <ol start="5" style="list-style-type: decimal">
@@ -1264,13 +1265,10 @@ corresponding signal strengths. Hint: you should end up with a data
 frame that has a lot fewer rows! Set this data set aside and use the
 long format data for the rest of the assignment</li>
 </ol>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr);</span>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># using pivot_wider to generate a wide format data frame</span></span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="co"># using pivot_wider to generate a wide format data frame</span></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   (!) this doesn&#39;t quite work, and generates a lot of NA&#39;s</span></span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   (!) not sure how to fix it or why it happens :(</span></span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>wide_IPS_sampledata <span class="ot">&lt;-</span> IPS_sampledata <span class="sc">%&gt;%</span></span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> mac, <span class="at">values_from =</span> signal)</span></code></pre></div>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>wide_IPS_sampledata <span class="ot">&lt;-</span> IPS_sampledata <span class="sc">%&gt;%</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> mac, <span class="at">values_from =</span> signal)</span></code></pre></div>
 <pre><code>## Warning: Values from `signal` are not uniquely identified; output will contain list-cols.
 ## * Use `values_fn = list` to suppress this warning.
 ## * Use `values_fn = {summary_fun}` to summarise duplicates.
@@ -1309,22 +1307,14 @@ observations for all access points in the data.</li>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(mac) <span class="sc">%&gt;%</span></span>
 <span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span>
 <span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>tally</span></code></pre></div>
-<pre><code>## # A tibble: 11 × 2
-## # Groups:   mac [11]
-##    mac                   n
-##    &lt;chr&gt;             &lt;int&gt;
-##  1 00:04:0e:5c:23:fc    49
-##  2 00:0f:a3:39:dd:cd 13165
-##  3 00:0f:a3:39:e0:4b  4414
-##  4 00:0f:a3:39:e1:c0 13184
-##  5 00:0f:a3:39:e2:10  1201
-##  6 00:14:bf:3b:c7:c6 11788
-##  7 00:14:bf:b1:97:81 10962
-##  8 00:14:bf:b1:97:8a 12017
-##  9 00:14:bf:b1:97:8d 10856
-## 10 00:14:bf:b1:97:90 11082
-## 11 00:30:bd:f8:7f:c5   113</code></pre>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(tally)</span></code></pre></div>
+<pre><code>##      mac                  n        
+##  Length:11          Min.   :   49  
+##  Class :character   1st Qu.: 2808  
+##  Mode  :character   Median :10962  
+##                     Mean   : 8076  
+##                     3rd Qu.:11902  
+##                     Max.   :13184</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>While the researchers did their best to clean their data, some noise
 was introduced by access points on other floors. Based on the number of
